@@ -11,6 +11,10 @@ No Vim documentation, but `:Unite spell_suggest[:word]` will display a list of s
 * the highlighting group for the replaceable word is `uniteSource_spell_suggest_Replaceable`, which is linked to `Search` by default; 
 * set `g:unite_spell_suggest_limit` to limit the number of suggestions retrieved by Vim’s `spellsuggest()` (by default, this variable is unset).
 
+### Installation
+
+The repo is ready for git-based plug-in managers (Pathogen, Vundle, NeoBundle etc.). If you need to install the source without a plug-in manager, just put `spell_suggest_vim` in an `autoload/unite/sources/` directory in your runtime path.
+
 ### Caveats
 
 Vim’s `spellsuggest()` only returns suggestions if `spell` is set in the current buffer (see `:h spellsuggest()`), and hence the Unite source will remain empty if it is unset. Use the `-no-empty` option to skip empty suggestion lists.
