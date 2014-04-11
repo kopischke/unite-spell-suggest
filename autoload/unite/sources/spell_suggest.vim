@@ -45,10 +45,11 @@ let s:unite_kind_substitution.action_table   = {
 
 " * 'replace' [word under cursor] action
 function! s:unite_kind_substitution.action_table.replace.func(candidate) abort
-  if s:cword.focus()
+  if s:cword.focus() && match(getline(s:cword.lnum), '^\M' . s:cword.before . s:cword.word) == 0
     call setline(s:cword.lnum, s:cword.before . a:candidate.word . s:cword.after)
     call cursor(s:cword.lnum, len(s:cword.before) + len(a:candidate.word))
   endif
+  call matchdelete(s:hi_id)
 endfunction
 
 " * 'replace all' [occurrences] action
@@ -125,9 +126,18 @@ function! s:unite_source.gather_candidates(args, context) abort
   if l:word == ''
     return []
   else
+    if s:cword.word != '' && &modifiable
+      " we have a substitution: highlight it in the text for emphasis
+      let l:kind  = 'substitution'
+      highlight default link uniteSource_spell_suggest_Replaceable Search
+      let s:hi_id = matchadd('uniteSource_spell_suggest_Replaceable',
+        \ '^\%'.s:cword.lnum.'l\M'.s:cword.before.'\zs'.s:cword.word)
+    else
+      let l:kind  = 'word'
+    endif
+
     let l:limit       = get(g:, 'unite_spell_suggest_limit', 0)
     let l:suggestions = l:limit > 0 ? spellsuggest(l:word, l:limit) : spellsuggest(l:word)
-    let l:kind        = s:cword.word != '' && &modifiable ? 'substitution' : 'word'
     return map(l:suggestions,
       \'{"word": v:val,
       \  "abbr": printf("%2d: %s", v:key+1, v:val),
