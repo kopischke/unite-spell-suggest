@@ -83,12 +83,12 @@ function! s:unite_source.gather_candidates(args, context) abort
   " return to position of word under cursor
   function! s:cword.focus() dict
     try
-      if bufexists(self.bufnr)
-        execute 'b'.self.bufnr
-        call cursor(self.lnum, self.col)
-        return 1
+      execute 'buffer' self.bufnr
+      if line('$') < self.lnum || col([self.lnum, '$']) < self.col
+        return 0
       endif
-      return 0
+      call cursor(self.lnum, self.col)
+      return 1
     catch
       return 0
     endtry
