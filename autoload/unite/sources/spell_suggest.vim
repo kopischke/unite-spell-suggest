@@ -48,8 +48,8 @@ function! s:unite_kind_substitution.action_table.replace.func(candidate) abort
   if s:cword.focus() && match(getline(s:cword.lnum), '^\M' . s:cword.before . s:cword.word) == 0
     call setline(s:cword.lnum, s:cword.before . a:candidate.word . s:cword.after)
     call cursor(s:cword.lnum, len(s:cword.before) + len(a:candidate.word))
+    call matchdelete(s:cword.hi_id)
   endif
-  call matchdelete(s:hi_id)
 endfunction
 
 " * 'replace all' [occurrences] action
@@ -95,6 +95,17 @@ function! s:unite_source.gather_candidates(args, context) abort
     endtry
   endfunction
 
+  " highlight replaceable word
+  function! s:cword.highlight() dict
+    try
+      highlight default link uniteSource_spell_suggest_Replaceable Search
+      let self.hi_id = matchadd('uniteSource_spell_suggest_Replaceable',
+        \ '^\%'.self.lnum.'l\M'.self.before.'\zs'.self.word)
+    catch
+      let self.hi_id = 0
+    endtry
+  endfunction
+
   " extract leading and trailing line parts using regexes only, as string
   " indexes are byte-based and thus not multi-byte safe to iterate
   let l:line = getline(s:cword.lnum)
@@ -127,11 +138,8 @@ function! s:unite_source.gather_candidates(args, context) abort
     return []
   else
     if s:cword.word != '' && &modifiable
-      " we have a substitution: highlight it in the text for emphasis
       let l:kind  = 'substitution'
-      highlight default link uniteSource_spell_suggest_Replaceable Search
-      let s:hi_id = matchadd('uniteSource_spell_suggest_Replaceable',
-        \ '^\%'.s:cword.lnum.'l\M'.s:cword.before.'\zs'.s:cword.word)
+      call s:cword.highlight()
     else
       let l:kind  = 'word'
     endif
@@ -149,6 +157,13 @@ endfunction
 function! s:unite_source.hooks.on_syntax(args, context)
   syntax match uniteSource_spell_suggest_LineNr /^\s\+\d\+:/
   highlight default link uniteSource_spell_suggest_LineNr LineNr
+endfunction
+
+" * remove replaceable word highlighting on close
+function! s:unite_source.hooks.on_close(args, context)
+  if s:cword.hi_id > 0
+    execute 'autocmd BufEnter <buffer='.s:cword.bufnr.'> call matchdelete('.s:cword.hi_id.') | autocmd! BufEnter <buffer>'
+  endif
 endfunction
 
 " Helper functions: {{{1
