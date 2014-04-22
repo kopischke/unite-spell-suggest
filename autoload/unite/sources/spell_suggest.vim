@@ -13,91 +13,26 @@ function! unite#sources#spell_suggest#define()
 endfunction
 
 let s:unite_source = {
-  \ 'name'        : 'spell_suggest',
-  \ 'description' : 'candidates from spellsuggest()',
-  \ 'hooks'       : {},
+  \ 'name'       : 'spell_suggest',
+  \ 'description': 'candidates from spellsuggest()',
+  \ 'hooks'      : {},
   \ }
 
 " * candidate listing
 function! s:unite_source.gather_candidates(args, context) abort
-  if &spell == 0
-    return []
-  endif
-
-  " get info about word under cursor
-  let s:cword       = {}
-  let s:cword.word  = s:trim(expand('<cword>'))
-  let s:cword.bufnr = bufnr('%')
-  let s:cword.lnum  = line('.')
-  let s:cword.col   = col('.')
-
-  " return to position of word under cursor
-  function! s:cword.focus() dict
-    try
-      execute 'buffer' self.bufnr
-      if line('$') < self.lnum || col([self.lnum, '$']) < self.col
-        return 0
-      endif
-      call cursor(self.lnum, self.col)
-      return 1
-    catch
-      return 0
-    endtry
-  endfunction
-
-  " highlight replaceable word
-  function! s:cword.highlight() dict
-    try
-      highlight default link uniteSource_spell_suggest_Replaceable Search
-      let self.hi_id = matchadd('uniteSource_spell_suggest_Replaceable',
-        \ '^\%'.self.lnum.'l\M'.self.before.'\zs'.self.word)
-    catch
-      let self.hi_id = 0
-    endtry
-  endfunction
-
-  " extract leading and trailing line parts using regexes only, as string
-  " indexes are byte-based and thus not multi-byte safe to iterate
-  let l:line = getline(s:cword.lnum)
-  if match(s:cword.word, '\M'.s:curchar().'$') != -1 && match(s:cword.word, '\M'.s:nextchar()) == -1
-    " we are on the last character, but not on the end of the line:
-    " using matchend() to the end of a word would get us the next word
-    " instead of the current one
-    let l:including = matchstr(l:line, '^.*\%'.s:cword.col.'c.')
-  else
-    " we are somewhere inside, or before (as '<cword>' skips non-word
-    " characters to get the next word), the word: use matchend() to locate the
-    " end of the word (note: multi-byte alphabetic characters do not match
-    " any word regex class, so we can't test for '\w')
-    let l:including = l:line[: matchend(l:line[s:cword.col :], '^.\{-}\(\>\|$\)') + s:cword.col]
-    " we get a trailing character everywhere but on line end: strip that
-    if match(l:line, '\M'.s:cword.word.'$') == -1
-      let l:including = substitute(l:including, '.$', '', '')
-    endif
-  endif
-  let s:cword.before = substitute(l:including, '\M'.s:cword.word.'$', '', '')
-  let s:cword.after  = substitute(l:line, '^\M'.l:including, '', '')
-
   " get word to base suggestions on
-  let l:word = len(a:args) > 0 ?
-    \ a:args[0] == '?' ? s:trim(input('Suggest spelling for: ', '', 'history')) : a:args[0] :
-    \ s:cword.word
+  if len(a:args) == 0
+    let s:cword = s:do_outside_unite(a:context, function('s:cword_info'))
+    let l:word  = s:cword.word
+    let l:kind  = s:cword.modifiable ? 'substitution' : 'word'
+  else
+    let s:cword = {}
+    let l:word  = mklib#string#trim(a:args[0] == '?' ? input('Suggest spelling for: ', '', 'history') : a:args[0])
+    let l:kind  = 'word'
+  endif
 
   " get suggestions
-  if l:word == ''
-    return []
-  else
-    if s:cword.word != '' && &modifiable
-      let l:kind  = 'substitution'
-      call s:cword.highlight()
-    else
-      let l:kind  = 'word'
-    endif
-
-    let l:limit       = get(g:, 'unite_spell_suggest_limit', 0)
-    let l:suggestions = l:limit > 0 ? spellsuggest(l:word, l:limit) : spellsuggest(l:word)
-      \  "kind": l:kind}')
-  endif
+  let l:suggestions = s:do_outside_unite(a:context, function('spellsuggest'), l:word)
   return map(l:suggestions,
     \'{"word"               : v:val,
     \  "abbr"               : printf("%2d: %s", v:key+1, v:val),
@@ -111,32 +46,58 @@ function! s:unite_source.hooks.on_syntax(args, context)
   highlight default link uniteSource_spell_suggest_LineNr LineNr
 endfunction
 
-" * remove replaceable word highlighting on close
-function! s:unite_source.hooks.on_close(args, context)
-  if s:cword.hi_id > 0
-    execute 'autocmd BufEnter <buffer='.s:cword.bufnr.'> call matchdelete('.s:cword.hi_id.') | autocmd! BufEnter <buffer>'
+" * set up live sync autocmd group
+function! s:unite_source.hooks.on_init(args, context)
+  if !empty(a:context) && empty(a:args)
+    let s:context = a:context
+    augroup unite_spell_suggest
+      autocmd!
+      autocmd BufEnter,CursorMoved,CursorMovedI * call s:unite_source.source__update()
+    augroup END
   endif
 endfunction
 
+" * remove live sync autocmd group
+function! s:unite_source.hooks.on_close(args, context)
+  call s:unite_source.source__cleanup()
+endfunction
+
+" * trigger suggestion update if cword changes
+function! s:unite_source.source__update() dict
+  try
+    if &spell && &filetype !~? 'unite\|quickfix' && s:cword != s:cword_info()
+      call unite#force_redraw(unite#helper#get_unite_winnr(s:context.buffer_name))
+    endif
+  catch
+    call s:unite_source.source__cleanup()
+  endtry
+endfunction
+
+" * clean up after source
+function! s:unite_source.source__cleanup() dict
+  silent! autocmd! unite_spell_suggest
+  silent! augroup! unite_spell_suggest
+endfunction
+
 " Helper functions: {{{1
-" * get character under cursor
-function! s:curchar()
-  return matchstr(getline('.'), '\%'.col('.').'c.')
+" * get info about word under cursor
+function! s:cword_info()
+  return {'word': mklib#string#trim(expand('<cword>')), 'modifiable': &modifiable}
 endfunction
 
-" * get character before the cursor
-function! s:nextchar()
-  return matchstr(getline('.'), '\%>'.col('.').'c.')
-endfunction
+" * execute function out of Unite context
+function! s:do_outside_unite(unite_context, funcref, ...) abort
+  let l:unite_winnr = !empty(a:unite_context) ? unite#helper#get_unite_winnr(a:unite_context.buffer_name) : -1
+  if l:unite_winnr > -1 && winnr() == l:unite_winnr
+    wincmd p
+    try
+      return call(a:funcref, a:000)
+    finally
+      execute l:unite_winnr.'wincmd w'
+    endtry
+  else
+    return call(a:funcref, a:000)
+  endif
+endfunction " }}}
 
-" * get character after the cursor
-function! s:prevchar()
-  return matchstr(getline('.'), '.*\zs\%<'.col('.').'c.')
-endfunction
-
-" * trim leading and trailing whitespace
-function! s:trim(string)
-  return matchstr(a:string, '\S.\+\S')
-endfunction
-" }}}
 " vim:set sw=2 sts=2 ts=8 et fdm=marker fdo+=jump fdl=1:
