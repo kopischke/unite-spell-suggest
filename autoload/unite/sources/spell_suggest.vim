@@ -1,46 +1,17 @@
-if !has('spell') || &compatible || !exists('*unite#define_kind')
 " unite-spell-suggest.vim - a spelling suggestion source for Unite
 " Maintainer: Martin Kopischke <http://martin.kopischke.net>
 "             based on work by MURAOKA Yusuke <yusuke@jbking.org>
 " License:    MIT (see LICENSE.md)
 " Version:    1.0
+if !has('spell') || &compatible || v:version < 700
   finish
 endif
 
+" 'spell_suggest' source: spelling suggestions for Unite
 function! unite#sources#spell_suggest#define()
   return get(s:, 'unite_source', [])
 endfunction
 
-" Define 'substitution' kind: {{{1
-" defined here because of its tight coupling to s:cword
-let s:unite_kind_substitution                = {'name': 'substitution'}
-let s:unite_kind_substitution.default_action = 'replace'
-let s:unite_kind_substitution.action_table   = {
-  \ 'replace':
-  \   {'description': 'replace the current word with the candidate'},
-  \ 'replace_all':
-  \   {'description': 'replace all occurences of the current word with the candidate'}
-  \ }
-
-" * 'replace' [word under cursor] action
-function! s:unite_kind_substitution.action_table.replace.func(candidate) abort
-  if s:cword.focus() && match(getline(s:cword.lnum), '^\M' . s:cword.before . s:cword.word) == 0
-    call setline(s:cword.lnum, s:cword.before . a:candidate.word . s:cword.after)
-    call cursor(s:cword.lnum, len(s:cword.before) + len(a:candidate.word))
-    call matchdelete(s:cword.hi_id)
-  endif
-endfunction
-
-" * 'replace all' [occurrences] action
-function! s:unite_kind_substitution.action_table.replace_all.func(candidate) abort
-  if s:cword.focus()
-    execute '% substitute/\<'.s:cword.word.'\>/'.a:candidate.word.'/Ig'
-  endif
-endfunction
-
-call unite#define_kind(s:unite_kind_substitution)
-
-" Define 'spell_suggest' source: {{{1
 let s:unite_source = {
   \ 'name'        : 'spell_suggest',
   \ 'description' : 'candidates from spellsuggest()',
@@ -125,11 +96,13 @@ function! s:unite_source.gather_candidates(args, context) abort
 
     let l:limit       = get(g:, 'unite_spell_suggest_limit', 0)
     let l:suggestions = l:limit > 0 ? spellsuggest(l:word, l:limit) : spellsuggest(l:word)
-    return map(l:suggestions,
-      \'{"word": v:val,
-      \  "abbr": printf("%2d: %s", v:key+1, v:val),
       \  "kind": l:kind}')
   endif
+  return map(l:suggestions,
+    \'{"word"               : v:val,
+    \  "abbr"               : printf("%2d: %s", v:key+1, v:val),
+    \  "kind"               : l:kind,
+    \  "source__target_word": l:word}')
 endfunction
 
 " * syntax highlighting
