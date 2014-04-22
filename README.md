@@ -1,22 +1,23 @@
 ## Unite spelling suggestion source
 
-A [unite.vim](https://github.com/Shougo/unite.vim) source that displays Vim’s spelling suggestions for a word.
+A [unite.vim][unite] source that displays Vim’s spelling suggestions for a word, updating live as the word under the cursor changes, and offering convenient replacement functionality to allow it to stand in stead of Vim’s `z=`.
 
-### Usage
-
-No Vim documentation, but `:Unite spell_suggest[:word]` will display a list of suggestions in the Unite interface. The selected candidate will replace the current word, if applicable, else Unite’s default word handling applies. The replaceable word is highlighted in the buffer to provide visual feedback.
-
-* an argument of `?` will prompt for a word to base suggestions on;
-* without an argument, suggestions are based on the current word (Vim’s `<cword>`, which is not strictly equivalent to the word under the cursor);
-* the highlighting group for the replaceable word is `uniteSource_spell_suggest_Replaceable`, which is linked to `Search` by default; 
-* set `g:unite_spell_suggest_limit` to limit the number of suggestions retrieved by Vim’s `spellsuggest()` (by default, this variable is unset).
+If you have wished there was a slicker, less obtrusive interface than Vim’s modal full-screen one to spelling suggestions and corrections, *unite-spell-suggest* is for you.
 
 ### Installation
 
-The repo is ready for git-based plug-in managers (Pathogen, Vundle, NeoBundle etc.). If you need to install the source without a plug-in manager, just put `spell_suggest_vim` in an `autoload/unite/sources/` directory in your runtime path.
+1. The old way: download and source the vimball from the [releases page][releases], then run `:helptags {dir}` on your runtimepath/doc directory. Or,
+2. The plug-in manager way: using a git-based plug-in manager (Pathogen, Vundle, NeoBundle etc.), simply add `kopischke/sunite-spell-suggest` to the list of plug-ins, source that and issue your manager's install command.
 
-### Caveats
+### Usage
 
-Vim’s `spellsuggest()` only returns suggestions if `spell` is set in the current buffer (see `:h spellsuggest()`), and hence the Unite source will remain empty if it is unset. Use the `-no-empty` option to skip empty suggestion lists.
+TL;DR: `:Unite spell_suggest`. For more, see the [documentation][doc].
 
-The replace operation *will* take multi-byte characters in the word to be replaced in stride; its correctness when replacing double wide characters, however, has not been tested (reports are welcome).
+### License
+
+*unite-spell-suggest* is licensed under [the terms of the MIT license according to the accompanying license file][license].
+
+[doc]:      doc/unite-spell-suggest.txt
+[license]:  LICENSE.md
+[releases]: releases
+[unite]:    https://github.com/Shougo/unite.vim
