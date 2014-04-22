@@ -1,4 +1,4 @@
-*unite-spell-suggest.txt*	For Vim version 7.0 or better
+*unite-spell-suggest.txt*   For Vim version 7.0 or better          version 1.0.0
 
 CONTENTS				*unite-spell-suggest-contents*
 
