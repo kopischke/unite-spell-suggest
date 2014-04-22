@@ -19,5 +19,5 @@ TL;DR: `:Unite spell_suggest`. For more, see the [documentation][doc].
 
 [doc]:      doc/unite-spell-suggest.txt
 [license]:  LICENSE.md
-[releases]: releases
+[releases]: https://github.com/kopischke/unite-spell-suggest/releases
 [unite]:    https://github.com/Shougo/unite.vim
