@@ -1,0 +1,95 @@
+*unite-spell-suggest.txt*	For Vim version 7.0 or better
+
+CONTENTS				*unite-spell-suggest-contents*
+
+	1. Introduction			|unite-spell-suggest-introduction|
+	2. Usage			|unite-spell-suggest-usage|
+	3. Troubleshooting		|unite-spell-suggest-troubleshooting|
+	4. Credits and license		|unite-spell-suggest-credits-license|
+
+==============================================================================
+INTRODUCTION				*unite-spell-suggest-introduction*
+
+	*unite-spell-suggest* is a |unite| source of spelling suggestions.
+	Suggestions based either on the argument passed to the source, or on
+	the current word under the cursor, are gathered from Vim's
+	spell checker and shown using Unite's interface.
+
+	When based on the current word, the suggestions are updated live when
+	the cursor moves to another word in any open buffer. If that buffer is
+	|modifiable|, the selected candidate can be substituted for the
+	current word (or even all of its occurrences in the current buffer),
+	which makes for a convenient alternative to |z=|.
+
+==============================================================================
+USAGE					*unite-spell-suggest-usage*
+
+SHOW SUGGESTIONS FOR WORD UNDER CURSOR ~
+
+	To show spelling suggestions for the word under the cursor, execute
+	the |:Unite| command with "spell_suggest" as the source parameter.
+>
+	:Unite spell_suggest
+<
+	unite-spell-suggest will retrieve the word under the cursor
+	(|<cword>|) and display a Unite window with spelling suggestions.
+	That list will be updated whenever the word under the cursor changes.
+
+REPLACE WORD UNDER CURSOR ~
+
+	If the buffer the cursor is placed in is |modifiable|, the default
+	action in the suggestion list is "replace", which replaces the word
+	under the cursor with the selected candidate. There is also
+	a "replace_all" action that replaces all occurrences of the word
+	under the cursor in the current buffer.
+
+SHOW SUGGESTIONS FOR ARBITRARY WORD ~
+
+	Spelling suggestions for arbitrary terms can be displayed by passing
+	the term as the source parameter:
+>
+	:Unite spell_suggest:arbitrary_term
+<
+	Passing "?" as the parameter will prompt for a word to look up:
+>
+	:Unite spell_suggest:?
+<
+	Note these do not update with changes of the word under the cursor,
+	and cannot be used as substitutions for that word; the normal Unite
+	word actions (see |unite-action-common|) are available, however.
+
+==============================================================================
+TROUBLESHOOTING				*unite-spell-suggest-troubleshooting*
+
+NO SPELLING SUGGESTIONS SHOWN ~
+
+	unite-spell-suggest relies on Vim's |spellsuggest()| function and will
+	only show suggestions when |z=| would. In particular, this means
+	|spelling| must be on in the active buffer.
+
+SPELLING SUGGESTIONS IN THE WRONG LANGUAGE ~
+
+	The spelling suggestion language is set by the |spelllang| setting.
+
+REPLACE AND REPLACE_ALL ACTIONS MISSING ~
+
+	The active buffer is not |modifiable|, or unite-spell-suggest has been
+	called with an arbitrary lookup term.
+
+OTHER ISSUES ~
+
+	You might have found a bug. Please refer to
+	https://github.com/kopischke/unite-spell-suggest/issues and see if it
+	is listed already; if not, report it by all means. Please include
+	a scenario that reproducibly leads to the issue using a minimal vimrc
+	(50 lines or less).
+
+==============================================================================
+CREDITS AND LICENSE			*unite-spell-suggest-credits-license*
+
+unite-spell-suggest is maintained by Martin Kopischke,
+http://martin.kopischke.net, and licensed under the terms of the MIT license
+according to the accompanying license file (LICENSE.md). It is based on
+original work by MURAOKA Yusuke, <yusuke@jbking.org>.
+
+vim:tw=78:ts=8:ft=help:norl:noet:fen:fdl=0:fdm=marker:
