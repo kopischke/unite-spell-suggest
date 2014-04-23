@@ -4,7 +4,7 @@
 		VIM REFERENCE for the Unite plug-in
 
 
-Unite spelling suggestion source	*unite-spell-suggest*
+Unite spelling suggestion source	*unite-spell-suggest-source*
 
 For help on Unite and its usage, see |unite.txt|.
 
