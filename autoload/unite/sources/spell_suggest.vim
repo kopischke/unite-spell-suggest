@@ -65,7 +65,7 @@ endfunction
 " * trigger suggestion update if cword changes
 function! s:unite_source.source__update() dict
   try
-    if &spell && &filetype !~? 'unite\|quickfix' && s:cword != s:cword_info()
+    if &spell && empty(&buftype) && s:cword != s:cword_info()
       call unite#force_redraw(unite#helper#get_unite_winnr(s:context.buffer_name))
     endif
   catch
