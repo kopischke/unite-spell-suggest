@@ -7,6 +7,9 @@ if !has('spell') || &compatible || v:version < 700
   finish
 endif
 
+let s:old_cpo = &cpo
+set cpo&vim " ensure we can use line continuation
+
 " 'spell_suggest' source: spelling suggestions for Unite
 function! unite#sources#spell_suggest#define()
   return get(s:, 'unite_source', [])
@@ -27,7 +30,9 @@ function! s:unite_source.gather_candidates(args, context) abort
     let l:kind  = s:cword.modifiable ? 'substitution' : 'word'
   else
     let s:cword = {}
-    let l:word  = mklib#string#trim(a:args[0] == '?' ? input('Suggest spelling for: ', '', 'history') : a:args[0])
+    let l:word  = mklib#string#trim(a:args[0] == '?' ?
+      \ input('Suggest spelling for: ', '', 'history') :
+      \ a:args[0])
     let l:kind  = 'word'
   endif
 
@@ -87,7 +92,8 @@ endfunction
 
 " * execute function out of Unite context
 function! s:do_outside_unite(unite_context, funcref, ...) abort
-  let l:unite_winnr = !empty(a:unite_context) ? unite#helper#get_unite_winnr(a:unite_context.buffer_name) : -1
+  let l:unite_winnr = !empty(a:unite_context) ?
+    \ unite#helper#get_unite_winnr(a:unite_context.buffer_name) : -1
   if l:unite_winnr > -1 && winnr() == l:unite_winnr
     wincmd p
     try
@@ -99,5 +105,7 @@ function! s:do_outside_unite(unite_context, funcref, ...) abort
     return call(a:funcref, a:000)
   endif
 endfunction " }}}
+
+let &cpo = s:old_cpo
 
 " vim:set sw=2 sts=2 ts=8 et fdm=marker fdo+=jump fdl=1:
