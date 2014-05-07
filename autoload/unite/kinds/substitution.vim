@@ -56,8 +56,13 @@ endfunction
 " * 'replace all' [occurrences of target] action
 function! s:unite_kind.action_table.replace_all.func(candidate) abort
   let l:target = s:get_target(a:candidate)
+  if &gdefault == 0
+    let l:gflag = 'g'
+  else
+    let l:gflag = ''
+  endif
   if !empty(l:target)
-    execute '% substitute/\<'.l:target.'\>/'.a:candidate.word.'/Ig'
+    execute '% substitute/\<'.l:target.'\>/'.a:candidate.word.'/I'.l:gflag
   endif
 endfunction
 
