@@ -62,7 +62,9 @@ function! s:unite_kind.action_table.replace_all.func(candidate) abort
     let l:gflag = ''
   endif
   if !empty(l:target)
-    execute '% substitute/\<'.l:target.'\>/'.a:candidate.word.'/I'.l:gflag
+    let l:save_view = winsaveview()
+    execute '% substitute/\<'.l:target.'\>/'.a:candidate.word.'/I'. l:gflag
+    call winrestview(l:save_view)
   endif
 endfunction
 
