@@ -53,7 +53,7 @@ endfunction
 
 " * set up live sync autocmd group
 function! s:unite_source.hooks.on_init(args, context)
-  if !empty(a:context) && !a:context.no_buffer && !a:context.no_split && empty(a:args)
+  if !empty(a:context) && !a:context.unite__not_buffer && a:context.split && empty(a:args)
     let s:context = a:context
     augroup unite_spell_suggest
       autocmd!
