@@ -91,8 +91,21 @@ The spelling suggestion language is set by the 'spelllang' setting.
 
 REPLACE AND REPLACE_ALL ACTIONS ARE MISSING:
 
-The active buffer is not 'modifiable', or unite-spell-suggest has been called
-with an arbitrary lookup term.
+Replacing and replacing all will not be available when:
+
+1. the active buffer is not 'modifiable';
+2. unite-spell-suggest has been called with an arbitrary lookup term.
+
+Both of these are by design.
+
+3. unite-spell-suggest has been called with the '-no-split' option and
+'startofline' is set.
+
+This is a side effect of the fact unite-spell-suggest looses track of the word
+under the cursor when 'startofline' is set and the '-no-split' buffer closes
+(see Issue #1, https://github.com/kopischke/unite-spell-suggest/issues/1, for
+details). Set 'nostartofline' if you want to use the spelling suggestion
+source in '-no-split' Unite buffers.
 
 
 OTHER ISSUES:

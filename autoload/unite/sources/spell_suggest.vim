@@ -52,6 +52,16 @@ function! s:unite_source.hooks.on_syntax(args, context)
   highlight default link uniteSource_spell_suggest_LineNr LineNr
 endfunction
 
+" * warn about incompatibility of 'startofline' and '-no-split' usage
+"   see https://github.com/kopischke/unite-spell-suggest/issues/1
+"   which we can't fix for good as 'startofline' is global and Unite's
+"   '-no-split' option returns without triggering autocommands.
+function! s:unite_source.hooks.on_pre_init(args, context)
+  if &startofline
+    call mklib#ui#warnmsg("[unite-spell-suggest] set 'nostartofline' if you want to use suggestions with '-no-split'.")
+  endif
+endfunction
+
 "" * set up live sync autocmd group
 function! s:unite_source.hooks.on_init(args, context)
   if !empty(a:context) && a:context.split && empty(a:args)
