@@ -27,7 +27,7 @@ function! s:unite_source.gather_candidates(args, context) abort
   if len(a:args) == 0
     let s:cword = s:do_outside_unite(a:context, function('s:cword_info'))
     let l:word  = s:cword.word
-    let l:kind  = s:cword.modifiable ? 'substitution' : 'word'
+    let l:kind  = s:cword.modifiable ? 'suggestion' : 'word'
   else
     let s:cword = {}
     let l:word  = mklib#string#trim(a:args[0] == '?' ?
@@ -42,7 +42,8 @@ function! s:unite_source.gather_candidates(args, context) abort
     \'{"word"               : v:val,
     \  "abbr"               : printf("%2d: %s", v:key+1, v:val),
     \  "kind"               : l:kind,
-    \  "source__target_word": l:word}')
+    \  "source__target_word": l:word,
+    \  "source__suggestion_index": v:key+1}')
 endfunction
 
 " * syntax highlighting
@@ -51,7 +52,7 @@ function! s:unite_source.hooks.on_syntax(args, context)
   highlight default link uniteSource_spell_suggest_LineNr LineNr
 endfunction
 
-" * set up live sync autocmd group
+"" * set up live sync autocmd group
 function! s:unite_source.hooks.on_init(args, context)
   if !empty(a:context) && !a:context.no_buffer && !a:context.no_split && empty(a:args)
     let s:context = a:context
