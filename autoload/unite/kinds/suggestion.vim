@@ -3,7 +3,7 @@
 "             based on work by MURAOKA Yusuke <yusuke@jbking.org>
 " License:    MIT (see LICENSE.md)
 " Version:    1.0.0
-if &compatible || v:version < 700
+if !has('spell') || &compatible
   finish
 endif
 
