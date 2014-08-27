@@ -30,20 +30,23 @@ function! s:unite_source.gather_candidates(args, context) abort
     let l:kind  = s:cword.modifiable ? 'suggestion' : 'word'
   else
     let s:cword = {}
-    let l:word  = mklib#string#trim(a:args[0] == '?' ?
-      \ input('Suggest spelling for: ', '', 'history') :
-      \ a:args[0])
+    let l:word  = mklib#string#trim(
+    \   a:args[0] == '?'
+    \   ? input('Suggest spelling for: ', '', 'history')
+    \   : a:args[0]
+    \ )
     let l:kind  = 'word'
   endif
 
   " get suggestions
   let l:suggestions = s:do_outside_unite(a:context, function('spellsuggest'), l:word)
-  return map(l:suggestions,
-    \'{"word"               : v:val,
-    \  "abbr"               : printf("%2d: %s", v:key+1, v:val),
-    \  "kind"               : l:kind,
-    \  "source__target_word": l:word,
-    \  "source__suggestion_index": v:key+1}')
+  return map(l:suggestions, '{
+  \                     "word": v:val,
+  \                     "kind": l:kind,
+  \                     "abbr": printf("%2d: %s", v:key+1, v:val),
+  \      "source__target_word": l:word,
+  \ "source__suggestion_index": v:key+1
+  \ }')
 endfunction
 
 " * syntax highlighting
@@ -66,10 +69,10 @@ function! s:unite_source.hooks.on_init(args, context)
       " cursor position restoration
       let l:autocmd_group = 'unite_spell_suggest_nosplit:'.bufnr('%')
       execute 'augroup '.l:autocmd_group
-      autocmd!
-      execute 'autocmd BufWinEnter <buffer> call winrestview('
-      \ .string(winsaveview())
-      \ .') | autocmd! '.l:autocmd_group
+        autocmd!
+        execute 'autocmd BufWinEnter <buffer> call winrestview('
+        \ .string(winsaveview())
+        \ .') | autocmd! '.l:autocmd_group
       augroup END
     endif
   endif
@@ -100,13 +103,17 @@ endfunction
 " Helper functions: {{{1
 " * get info about word under cursor
 function! s:cword_info()
-  return {'word': mklib#string#trim(expand('<cword>')), 'modifiable': &modifiable}
+  return {
+  \       'word': mklib#string#trim(expand('<cword>')),
+  \ 'modifiable': &modifiable
+  \ }
 endfunction
 
 " * execute function out of Unite context
 function! s:do_outside_unite(unite_context, funcref, ...) abort
-  let l:unite_winnr = !empty(a:unite_context) ?
-    \ unite#helper#get_unite_winnr(a:unite_context.buffer_name) : -1
+  let l:unite_winnr = !empty(a:unite_context)
+  \ ? unite#helper#get_unite_winnr(a:unite_context.buffer_name)
+  \ : -1
   if l:unite_winnr > -1 && winnr() == l:unite_winnr
     wincmd p
     try

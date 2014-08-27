@@ -7,6 +7,9 @@ if !has('spell') || &compatible
   finish
 endif
 
+let s:old_cpo = &cpo
+set cpo&vim " ensure we can use line continuation
+
 function! unite#kinds#suggestion#define()
   return get(s:, 'unite_kind', [])
 endfunction
@@ -15,11 +18,11 @@ endfunction
 let s:unite_kind                = {'name': 'suggestion'}
 let s:unite_kind.default_action = 'replace'
 let s:unite_kind.action_table   = {
-  \ 'replace':
-  \   {'description': "replace the target word with the suggested suggestion"},
-  \ 'replace_all':
-  \   {'description': "replace all occurrences of the target word with the suggested suggestion"}
-  \ }
+\ 'replace':
+\   {'description': "replace the target word with the suggested suggestion"},
+\ 'replace_all':
+\   {'description': "replace all occurrences of the target word with the suggested suggestion"}
+\ }
 
 " * 'replace' [occurrence of target under cursor] action
 function! s:unite_kind.action_table.replace.func(candidate) abort
@@ -38,11 +41,13 @@ function! s:unite_kind.action_table.replace_all.func(candidate) abort
       execute 'spellrepall'
       return 1
     catch /^Vim\%((\a\+)\)\=:E753/
-      " `:spellrepall`throws E753 when there are no more words to replace.
+      " `:spellrepall`throws E753 when there are no more words to replace
       return 1
     endtry
   endif
   return 0
 endfunction
+
+let &cpo = s:old_cpo
 
 " vim:set sw=2 sts=2 ts=8 et fdm=marker fdo+=jump fdl=1:
