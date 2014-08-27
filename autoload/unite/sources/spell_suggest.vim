@@ -3,7 +3,7 @@
 "             based on work by MURAOKA Yusuke <yusuke@jbking.org>
 " License:    MIT (see LICENSE.md)
 " Version:    1.0.0
-if !has('spell') || &compatible || v:version < 700
+if !has('spell') || &compatible
   finish
 endif
 
@@ -27,22 +27,26 @@ function! s:unite_source.gather_candidates(args, context) abort
   if len(a:args) == 0
     let s:cword = s:do_outside_unite(a:context, function('s:cword_info'))
     let l:word  = s:cword.word
-    let l:kind  = s:cword.modifiable ? 'substitution' : 'word'
+    let l:kind  = s:cword.modifiable ? 'suggestion' : 'word'
   else
     let s:cword = {}
-    let l:word  = mklib#string#trim(a:args[0] == '?' ?
-      \ input('Suggest spelling for: ', '', 'history') :
-      \ a:args[0])
+    let l:word  = mklib#string#trim(
+    \   a:args[0] == '?'
+    \   ? input('Suggest spelling for: ', '', 'history')
+    \   : a:args[0]
+    \ )
     let l:kind  = 'word'
   endif
 
   " get suggestions
   let l:suggestions = s:do_outside_unite(a:context, function('spellsuggest'), l:word)
-  return map(l:suggestions,
-    \'{"word"               : v:val,
-    \  "abbr"               : printf("%2d: %s", v:key+1, v:val),
-    \  "kind"               : l:kind,
-    \  "source__target_word": l:word}')
+  return map(l:suggestions, '{
+  \                     "word": v:val,
+  \                     "kind": l:kind,
+  \                     "abbr": printf("%2d: %s", v:key+1, v:val),
+  \      "source__target_word": l:word,
+  \ "source__suggestion_index": v:key+1
+  \ }')
 endfunction
 
 " * syntax highlighting
@@ -51,14 +55,26 @@ function! s:unite_source.hooks.on_syntax(args, context)
   highlight default link uniteSource_spell_suggest_LineNr LineNr
 endfunction
 
-" * set up live sync autocmd group
+" * set up handling autocmd groups
 function! s:unite_source.hooks.on_init(args, context)
-  if !empty(a:context) && !a:context.no_buffer && !a:context.no_split && empty(a:args)
-    let s:context = a:context
-    augroup unite_spell_suggest
-      autocmd!
-      autocmd BufEnter,CursorMoved,CursorMovedI * call s:unite_source.source__update()
-    augroup END
+  if !empty(a:context) && empty(a:args)
+    if a:context.split
+      " live sync setup
+      let s:context = a:context
+      augroup unite_spell_suggest
+        autocmd!
+        autocmd BufEnter,CursorMoved,CursorMovedI * call s:unite_source.source__update()
+      augroup END
+    elseif &startofline
+      " cursor position restoration
+      let l:autocmd_group = 'unite_spell_suggest_nosplit:'.bufnr('%')
+      execute 'augroup '.l:autocmd_group
+        autocmd!
+        execute 'autocmd BufWinEnter <buffer> call winrestview('
+        \ .string(winsaveview())
+        \ .') | autocmd! '.l:autocmd_group
+      augroup END
+    endif
   endif
 endfunction
 
@@ -87,13 +103,17 @@ endfunction
 " Helper functions: {{{1
 " * get info about word under cursor
 function! s:cword_info()
-  return {'word': mklib#string#trim(expand('<cword>')), 'modifiable': &modifiable}
+  return {
+  \       'word': mklib#string#trim(expand('<cword>')),
+  \ 'modifiable': &modifiable
+  \ }
 endfunction
 
 " * execute function out of Unite context
 function! s:do_outside_unite(unite_context, funcref, ...) abort
-  let l:unite_winnr = !empty(a:unite_context) ?
-    \ unite#helper#get_unite_winnr(a:unite_context.buffer_name) : -1
+  let l:unite_winnr = !empty(a:unite_context)
+  \ ? unite#helper#get_unite_winnr(a:unite_context.buffer_name)
+  \ : -1
   if l:unite_winnr > -1 && winnr() == l:unite_winnr
     wincmd p
     try

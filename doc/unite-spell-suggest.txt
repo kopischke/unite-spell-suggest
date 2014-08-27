@@ -52,6 +52,9 @@ the suggestion list is "replace", which replaces the word under the cursor
 with the selected candidate. There is also a "replace_all" action that
 replaces all occurrences of the word under the cursor in the current buffer.
 
+You can also use Vim's |:spellrepall| after a "replace" action just like you
+could after using the Vim spell checking interface.
+
 
 SHOWING SUGGESTIONS FOR ARBITRARY WORDS:
 
@@ -91,9 +94,12 @@ The spelling suggestion language is set by the 'spelllang' setting.
 
 REPLACE AND REPLACE_ALL ACTIONS ARE MISSING:
 
-The active buffer is not 'modifiable', or unite-spell-suggest has been called
-with an arbitrary lookup term.
+Replacing and replacing all will not be available when:
 
+1. the active buffer is not 'modifiable';
+2. unite-spell-suggest has been called with an arbitrary lookup term.
+
+Both of these are by design.
 
 OTHER ISSUES:
 
