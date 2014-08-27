@@ -7,7 +7,7 @@ If you have wished there was a slicker, less obtrusive interface than Vim’s mo
 ### Installation
 
 1. The old way: download and source the vimball from the [releases page][releases], then run `:helptags {dir}` on your runtimepath/doc directory. Or,
-2. The plug-in manager way: using a git-based plug-in manager (Pathogen, Vundle, NeoBundle etc.), simply add `kopischke/sunite-spell-suggest` to the list of plug-ins, source that and issue your manager's install command.
+2. The plug-in manager way: using a git-based plug-in manager (Pathogen, Vundle, NeoBundle etc.), simply add `kopischke/unite-spell-suggest` to the list of plug-ins, source that and issue your manager's install command.
 
 ### Usage
 
