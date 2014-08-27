@@ -52,6 +52,9 @@ the suggestion list is "replace", which replaces the word under the cursor
 with the selected candidate. There is also a "replace_all" action that
 replaces all occurrences of the word under the cursor in the current buffer.
 
+You can also use Vim's |:spellrepall| after a "replace" action just like you
+could after using the Vim spell checking interface.
+
 
 SHOWING SUGGESTIONS FOR ARBITRARY WORDS:
 
