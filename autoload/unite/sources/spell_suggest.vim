@@ -102,9 +102,21 @@ endfunction
 
 " Helper functions: {{{1
 " * get info about word under cursor
+"   (making sure we are looking at the same word as `z=` along the way)
 function! s:cword_info()
+  let l:cword     = mklib#string#trim(expand('<cword>'))
+  let l:curpos    = getcurpos()
+  let l:spellword = spellbadword()[0]
+  " `spellbadword()` only moves left to the start of the word if currently on
+  " a spelling error; if we are right of our position after calling it, it
+  " has jumped to another error (see `:h spellbadword()`).
+  if !empty(l:spellword) && col('.') <= l:curpos[2]
+    let l:cword = l:spellword
+  endif
+  call setpos('.', l:curpos)
+
   return {
-  \       'word': mklib#string#trim(expand('<cword>')),
+  \       'word': l:cword,
   \ 'modifiable': &modifiable
   \ }
 endfunction
