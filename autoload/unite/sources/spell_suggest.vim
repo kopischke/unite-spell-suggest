@@ -104,22 +104,8 @@ endfunction
 " * get info about word under cursor
 "   (making sure we are looking at the same word as `z=` along the way)
 function! s:cword_info() abort
-  let l:cword = mklib#string#trim(expand('<cword>'))
-
-  if &spell
-    let l:curpos    = getcurpos()
-    let l:spellword = spellbadword()[0]
-    " `spellbadword()` only moves left to the start of the word if currently on
-    " a spelling error; if we are right of our position after calling it, it
-    " has jumped to another error (see `:h spellbadword()`).
-    if !empty(l:spellword) && col('.') <= l:curpos[2]
-      let l:cword = l:spellword
-    endif
-    call setpos('.', l:curpos)
-  endif
-
   return {
-  \       'word': l:cword,
+  \       'word': mklib#cursor#spellstatus()[0],
   \ 'modifiable': &modifiable
   \ }
 endfunction
