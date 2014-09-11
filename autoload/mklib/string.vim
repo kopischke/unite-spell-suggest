@@ -39,64 +39,81 @@ endfunction " }}}
 
 " Trim a leading and trailing {pattern} from {string}:
 " @signature:  mklib#string#trim({string:Any}[, {pattern:String}])
-" @returns:    {string} with leading and trailing matches of {pattern} removed
+" @returns:    String {string} with leading and trailing matches of {pattern} removed
 " @notes:      {pattern} defaults to whitespace if omitted
 function! mklib#string#trim(string, ...) abort " {{{
-  let l:string = mklib#string#string(a:string)
-  return a:0 ?
-  \ mklib#string#ltrim(mklib#string#rtrim(l:string, a:1), a:1) :
-  \ matchstr(l:string, '\S.\+\S')
-endfunction " }}} " }}}
+  let l:string  = mklib#string#string(a:string)
+  let l:pattern = a:0 ? '\%('.a:1.'\)\+' : '\s\+'
+  return mklib#string#ltrim(mklib#string#rtrim(l:string, l:pattern), l:pattern)
+endfunction " }}}
 
 " Like trim(), but only trim leading {pattern}:
 " @signature:  mklib#string#ltrim({string:Any}[, {pattern:String}])
-" @returns:    {string} with leading matches of {pattern} removed
+" @returns:    String {string} with leading matches of {pattern} removed
 " @notes:      {pattern} defaults to whitespace if omitted
 function! mklib#string#ltrim(string, ...) abort " {{{
-  let l:string = mklib#string#string(a:string)
-  return a:0 ?
-  \ substitute(l:string, '^\('.a:1.'\)\+', '', '') :
-  \ matchstr(l:string, '\S.\+$')
-endfunction " }}} " }}}
+  let l:string  = mklib#string#string(a:string)
+  let l:pattern = a:0 ? '\%('.a:1.'\)\+' : '\s\+'
+  return substitute(l:string, '^'.l:pattern, '', '')
+endfunction " }}}
 
 " Like trim(), but only trim trailing {pattern}:
 " @signature:  mklib#string#rtrim({string:Any}[, {pattern:String}])
-" @returns:    {string} with trailing matches of {pattern} removed
+" @returns:    String {string} with trailing matches of {pattern} removed
 " @notes:      {pattern} defaults to whitespace if omitted
 function! mklib#string#rtrim(string, ...) abort " {{{
-  let l:string = mklib#string#string(a:string)
-  return a:0 ?
-  \ substitute(l:string, '\('.a:1.'\)\+$', '', '') :
-  \ matchstr(l:string, '^.\+\S')
-endfunction " }}} " }}}
+  let l:string  = mklib#string#string(a:string)
+  let l:pattern = a:0 ? '\%('.a:1.'\)\+' : '\s\+'
+  return substitute(l:string, l:pattern.'$', '', '')
+endfunction " }}}
 
-" Ensure {string} is wrapped in {delimiter}:
-" @signature:  mklib#string#wrap({string:Any}, {delimiter:String}[, {end_delimiter:String}])
-" @returns:    {string} wrapped in {delimiter}, or {delimiter} left and {end_delimiter} right
-" @notes:      delimiters are not added if {string} is already wrapped in them;
-"              however, an unbalanced delimiter in {string} will be wrapped
+" Ensure {string} is wrapped in a  pair of {delimiter} or
+" {delimiter}/{end_delimiter}, adding them if not present yet:
+" @signature:  mklib#string#wrap({string:Any}, {delimiter:String}[, {end_delimiter:String}][, {options:Dictionary}])
+" @returns:    String {string} wrapped in {delimiter}, or {delimiter} left and {end_delimiter} right
 " @examples:
 " - mklib#string#wrap('Foo', '"')      => '"Foo"'
 " - mklib#string#wrap('Foo', '>', '<') => '>Foo<'
 " - mklib#string#wrap('"Foo"', '"')    => '"Foo"'
-" - mklib#string#wrap('"Foo', '"')     => '""Foo"'
 function! mklib#string#wrap(string, delimiter, ...) abort " {{{
-  let l:string = mklib#string#string(a:string)
-  let l:ldelim = a:delimiter
-  let l:rdelim = a:0 ? a:1 : l:ldelim
-  let l:string = substitute(l:string, '^\V'.l:ldelim.'\m\(.\{-}\)\V'.l:rdelim.'\$', '\1', '')
-  return l:ldelim . l:string . l:rdelim
-endfunction " }}} " }}}
+  let l:args    = mklib#script#optparse(a:000, 2)
+  let l:wrapped = call(function('mklib#string#base'), [a:string, a:delimiter, l:args.opts])
+  return call(function('mklib#string#cap'), [l:wrapped, get(a:, '1', a:delimiter), l:args.opts])
+endfunction " }}}
+
+" Ensure {string} starts with {delimiter}, adding it if not present yet:
+" @signature:  mklib#string#base({string:Any}, {delimiter:String}[, {options:Dictionary}])
+" @options:    'collapse'  replace all starting delimiters by a single instance (default: 0)
+" @returns:    String {string} starting with {delimiter}
+function! mklib#string#base(string, delimiter, ...) abort " {{{
+  let l:collapse      = a:0 ? get(a:1, 'collapse', 0) : 0
+  let l:string        = mklib#string#string(a:string)
+  let l:escaped_delim = mklib#regex#escape(a:delimiter)
+  let l:pattern       = l:collapse ? '\%('.l:escaped_delim.'\)\+' : l:escaped_delim
+  return a:delimiter . substitute(l:string, '^\V'.l:pattern, '', '')
+endfunction " }}}
+
+" Ensure {string} ends with {delimiter}, adding it if not present yet:
+" @signature:  mklib#string#cap({string:Any}, {delimiter:String}[, {options:Dictionary}])
+" @options:    'collapse'  replace all ending delimiters by a single instance (default: 0)
+" @returns:    String {string} ending with {delimiter}
+function! mklib#string#cap(string, delimiter, ...) abort " {{{
+  let l:collapse      = a:0 ? get(a:1, 'collapse', 0) : 0
+  let l:string        = mklib#string#string(a:string)
+  let l:escaped_delim = mklib#regex#escape(a:delimiter)
+  let l:pattern       = l:collapse ? '\%('.l:escaped_delim.'\)\+' : l:escaped_delim
+  return substitute(l:string, '\V'.l:pattern.'\$', '', '') . a:delimiter
+endfunction " }}}
 
 " Capitalize {string}:
 " @signature:  mklib#string#capitalize({string:String}[, {preserve:Number}])
-" @returns:    {string} with the first letter upper case, the rest
+" @returns:    String {string} with the first letter upper case, the rest
 "              - lower case if {preserve} is 0 or missing, i.e. 'fooBar' => 'Foobar'
 "              - unmodified if {preserve} is 1,            i.e. 'fooBar' => 'FooBar'
 function! mklib#string#capitalize(string, ...) abort " {{{
   let l:replace = '\u\1'.(get(a:, '1', 0) ? '\2' : '\L\2')
   return substitute(a:string, '^\(\S\)\(\S\+\)$', l:replace, '')
-endfunction " }}} " }}}
+endfunction " }}}
 
 " Return a pattern matching {string} case independently:
 " @signature:  mklib#string#uncase({string:String})
@@ -111,7 +128,7 @@ function! mklib#string#uncase(string) abort " {{{
   \     ), ']['
   \   ).']', '\[\\\]', '\[\\\\\]', 'g'
   \ )
-endfunction " }}} " }}}
+endfunction " }}}
 
 " Extract a list of matches for {pattern} from {string}:
 " @signature:  mklib#string#extract({string:Any}, {pattern:String}[, {unique:Number}])
@@ -123,7 +140,7 @@ function! mklib#string#extract(string, pattern, ...) abort " {{{
     call add(l:parts, matchstr(l:string, a:pattern, 0, len(l:parts)+1))
   endwhile
   return a:0 && a:1 ? uniq(sort(l:parts)) : l:parts
-endfunction " }}} " }}}
+endfunction " }}}
 
 " Parse a String into a Dictionary of items matching {pattern}
 " and of items not matching {pattern}, both indexed by position:
@@ -207,6 +224,6 @@ function! mklib#string#splice(string, pattern) abort " {{{
   endfunction
 
   return l:spliced
-endfunction " }}} " }}}
+endfunction " }}}
 
 " vim:set sw=2 sts=2 ts=8 et fdm=marker fdo+=jump fdl=0:
