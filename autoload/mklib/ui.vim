@@ -2,10 +2,10 @@
 " Maintainer: Martin Kopischke <http://martin.kopischke.net>
 " License:    same as Vim (:h license)
 
-" Echo a highlighted message, optionally as a true message
+" Echo a highlighted message, optionally as a true message:
 " @signature:  mklib#ui#echo({message:String}[, {options:Dictionary}])
-" @options:    log:   1 to echo a true message (default: 0)
-"              group: highlight group to use (default: None)
+" @options:    'log'    1 to echo a true message (default: 0)
+"              'group'  highlight group to use (default: None)
 function! mklib#ui#echo(message, ...) " {{{
   let l:opts = a:0 ? a:1 : {}
   let l:echo_cmd = get(l:opts, 'log', 0) ? 'echomsg' : 'echo'
