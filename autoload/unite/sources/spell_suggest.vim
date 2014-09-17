@@ -2,7 +2,7 @@
 " Maintainer: Martin Kopischke <http://martin.kopischke.net>
 "             based on work by MURAOKA Yusuke <yusuke@jbking.org>
 " License:    MIT (see LICENSE.md)
-" Version:    1.1.1
+" Version:    1.1.2
 if !has('spell') || &compatible
   finish
 endif
