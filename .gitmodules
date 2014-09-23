@@ -1,3 +1,3 @@
 [submodule "lib/vim-mklib"]
 	path = lib/vim-mklib
-	url = git@github.com:kopischke/vim-mklib.git
+	url = https://github.com/kopischke/vim-mklib.git
