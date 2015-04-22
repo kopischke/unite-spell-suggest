@@ -36,9 +36,9 @@ endfunction
 
 " * 'replace all' [occurrences of target] action
 function! s:unite_kind.action_table.replace_all.func(candidate) abort
-  if s:unite_kind.action_table.replace.func(a:candidate)
+  if s:unite_kind.action_table.replace.func(a:candidate) is 1
     try
-      execute 'spellrepall'
+      spellrepall
       return 1
     catch /^Vim\%((\a\+)\)\=:E753/
       " `:spellrepall`throws E753 when there are no more words to replace
