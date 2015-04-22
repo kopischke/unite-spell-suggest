@@ -3,7 +3,7 @@
 "             based on work by MURAOKA Yusuke <yusuke@jbking.org>
 " License:    MIT (see LICENSE.md)
 " Version:    1.1.2
-if !has('spell') || &compatible
+if spellsuggest#compatible() isnot 1
   finish
 endif
 
@@ -30,7 +30,7 @@ function! s:unite_source.gather_candidates(args, context) abort
     let l:kind  = s:cword.modifiable ? 'suggestion' : 'word'
   else
     let s:cword = {}
-    let l:word  = mklib#string#trim(
+    let l:word  = spellsuggest#trimstr(
     \   a:args[0] == '?'
     \   ? input('Suggest spelling for: ', '', 'history')
     \   : a:args[0]
@@ -106,7 +106,7 @@ endfunction
 "   (making sure we are looking at the same word as `z=` along the way)
 function! s:cword_info() abort
   return {
-  \       'word': mklib#cursor#spellstatus()[0],
+  \       'word': spellsuggest#cword(),
   \ 'modifiable': &modifiable
   \ }
 endfunction
