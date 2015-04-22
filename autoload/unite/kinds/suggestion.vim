@@ -19,9 +19,9 @@ let s:unite_kind                = {'name': 'suggestion'}
 let s:unite_kind.default_action = 'replace'
 let s:unite_kind.action_table   = {
 \ 'replace':
-\   {'description': "replace the target word with the suggested suggestion"},
+\   {'description': "replace the target word with the selected suggestion"},
 \ 'replace_all':
-\   {'description': "replace all occurrences of the target word with the suggested suggestion"}
+\   {'description': "replace all occurrences of the target word with the selected suggestion"}
 \ }
 
 " * 'replace' [occurrence of target under cursor] action
