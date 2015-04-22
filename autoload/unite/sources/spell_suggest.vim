@@ -64,6 +64,7 @@ function! s:unite_source.hooks.on_init(args, context)
       augroup unite_spell_suggest
         autocmd!
         autocmd BufEnter,CursorMoved,CursorMovedI * call s:unite_source.source__update()
+        autocmd FileType unite call s:spell_suggest_movement() | autocmd! unite_spell_suggest FileType
       augroup END
     elseif &startofline
       " cursor position restoration
@@ -127,6 +128,13 @@ function! s:do_outside_unite(unite_context, funcref, ...) abort
   endif
 endfunction " }}}
 
+" * set up spelling error movement inside the Unite window
+function! s:spell_suggest_movement() abort
+  " jump to errors with [s and ]s
+  noremap <buffer> [s <C-w>p[s<C-w>p
+  noremap <buffer> ]s <C-w>p]s<C-w>p
+endfunction
+
 let &cpo = s:old_cpo
 
-" vim:set sw=2 sts=2 ts=8 et fdm=marker fdo+=jump fdl=1:
+" vim:set sw=2 sts=2 ts=8 et fdm=marker fmr={{{,}}}:

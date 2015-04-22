@@ -50,4 +50,4 @@ endfunction
 
 let &cpo = s:old_cpo
 
-" vim:set sw=2 sts=2 ts=8 et fdm=marker fdo+=jump fdl=1:
+" vim:set sw=2 sts=2 ts=8 et fdm=marker fmr={{{,}}}:
