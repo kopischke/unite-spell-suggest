@@ -22,7 +22,7 @@ TL;DR: `:Unite spell_suggest`. For more, see the [documentation][doc].
 
 *unite-spell-suggest* is licensed under [the terms of the MIT license according to the accompanying license file][license].
 
-[badge-status]: http://img.shields.io/badge/status-active-brightgreen.svg?style=flat-square
+[badge-status]: http://img.shields.io/badge/status-EOL-red.svg?style=flat-square
 [badge-release]: http://img.shields.io/github/release/kopischke/unite-spell-suggest.svg?style=flat-square
 [badge-issues]: http://img.shields.io/github/issues/kopischke/unite-spell-suggest.svg?style=flat-square
 [badge-license]: http://img.shields.io/badge/license-MIT-blue.svg?style=flat-square
